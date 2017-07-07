@@ -1,0 +1,111 @@
+META-INF/
+
+# app specific
+test/rally-selenium-tests/src/test/resources/local.conf
+test/rally-selenium-tests/src/test/resources/run.conf
+test/rally-selenium-tests/src/test/resources/local-custom.conf
+test/rally-selenium-tests/src/test/resources/phantomjs-config.json
+certs/
+
+# IntelliJ specific
+*.iml
+!intellijProject/*.iml
+.idea/
+!intellijProject/*.idea
+.idea_modules/
+final/*
+out/*
+
+# sbt specific
+dist/*
+target/
+
+# test output
+test-output/
+test/test-output
+test/test-reports
+web/rally/test/coverage
+
+# generic
+*.class
+*.log
+*.log.json
+*.swp
+*~
+\#*#
+.DS_Store
+classes/
+
+# other stuff
+boot/
+*.pyc
+*.ini
+
+# eclipse
+workbench.xmi
+.project
+.settings
+.classpath
+.metadata
+*.eml
+*.userlibraries
+
+# jrebel
+rebel.xml
+*.swp
+META-INF/
+
+# compiled css
+.sass-cache/
+sassified/
+
+# play
+RUNNING_PID
+
+# node (for grunt)
+node_modules
+bower_components
+
+# web careverge output
+web/careverge/dist
+web/rally/dist
+
+# careutil output
+backend/common/CareUtil/eligibility_stats
+
+#atlassian plugin
+atlassian-ide-plugin.xml
+test/atlassian-ide-plugin.xml
+
+#minification stuff
+*.min_*.js
+*.min_*.css
+
+#grunt stuff
+.grunt/
+_SpecRunner.html
+.tmp
+wellness-web-build
+units.html
+
+#build stuff
+*.deb
+debug.scala
+DummmyEventPublisher.scala
+
+#ctag stuff
+/tags
+.tern-project
+
+#i18n
+*ps_PH.po
+*ps_PH.json
+web/rally/app/json/languages
+
+#bundler stuff
+.bundle
+
+#rally config
+web/rally/app/scripts/app/config.js
+
+project/
