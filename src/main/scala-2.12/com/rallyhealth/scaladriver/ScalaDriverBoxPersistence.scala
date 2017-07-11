@@ -15,7 +15,6 @@ import org.mongodb.scala.model.Accumulators._
 import org.mongodb.scala.model.Aggregates._
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Projections._
-import org.mongodb.scala.model.Filters.eq
 import org.mongodb.scala.model.Sorts._
 
 
@@ -37,7 +36,7 @@ class JodaCodec extends Codec[DateTime] {
 
 class ScalaDriverBoxConnectionManager {
   val mongoClient: MongoClient = MongoClient()
-  val database: MongoDatabase = mongoClient.getDatabase("scalaDriverDb")
+    val database: MongoDatabase = mongoClient.getDatabase("scalaDriverDb")
 }
 
 class ScalaDriverBoxPersistence extends ScalaDriverBoxConnectionManager {
@@ -48,20 +47,7 @@ class ScalaDriverBoxPersistence extends ScalaDriverBoxConnectionManager {
 
   def save(box: Box): Future[Unit] = {
 
-    val promise = Promise[Unit]()
-
-    def observer  = new Observer[Completed] {
-
-      override def onNext(result: Completed): Unit = promise.complete(Try(()))
-
-      override def onError(e: Throwable): Unit = promise.failure(new Exception("Failed to insert :" + e.getMessage))
-
-      override def onComplete(): Unit = promise.complete(Try(()))
-    }
-
-    collection.insertOne(box).subscribe(observer)
-
-    promise.future
+    collection.insertOne(box).toFuture().map( _ => ())
   }
 
   def findOneCorrugatedBox(): Future[Option[CorrugatedBox]] = {
@@ -76,26 +62,17 @@ class ScalaDriverBoxPersistence extends ScalaDriverBoxConnectionManager {
   def findCorrugatedBoxById(id: String): Future[Option[CorrugatedBox]] = {
 
     import org.mongodb.scala.model.Filters.{eq => eqTo}
-    collection
-      .find(eqTo("_id", id))
-      .toFuture()
-      .map(_.headOption.map(_.asInstanceOf[CorrugatedBox]))
+
+    val observable : SingleObservable[Box] = collection
+      .find(eqTo("_id", id)).first()
+
+    observable.toFuture().map(box => {
+      Option(box).map(_.asInstanceOf[CorrugatedBox])
+    })
   }
 
   def deleteAll(): Future[DeleteResult] = {
-    val promise = Promise[DeleteResult]()
-
-    collection.deleteMany(org.mongodb.scala.model.Filters.exists("length")).subscribe(new Observer[DeleteResult] {
-
-      override def onError(e: Throwable): Unit = promise.failure(new Exception("Failed to get :" + e.getMessage))
-
-      override def onComplete(): Unit = ()
-
-      override def onNext(result: DeleteResult): Unit = {
-        promise.complete(Try(result))
-      }
-    })
-    promise.future
+    collection.deleteMany(org.mongodb.scala.model.Filters.exists("length")).toFuture()
   }
 
   def findAllBoxesSortedByLength(): Future[Seq[Box]] = {
@@ -105,15 +82,7 @@ class ScalaDriverBoxPersistence extends ScalaDriverBoxConnectionManager {
   }
 
   def findAggregateLength() : Future[Int] = {
-    val promise = Promise[Int]()
-    collection.aggregate[Document](List(project(and(excludeId(), include("length"))),group(null, sum("total", "$length")))).subscribe(new Observer[Document] {
-      override def onError(e: Throwable): Unit = promise.failure(new Exception("Failed to aggregate :" + e.getMessage))
-
-      override def onComplete(): Unit = ()
-
-      override def onNext(result: Document): Unit = promise.complete(Try(result.getInteger("total")))
-
-    })
-    promise.future
+    val observable: SingleObservable[Document] = collection.aggregate[Document](List(project(and(excludeId(), include("length"))),group(null, sum("total", "$length"))))
+    observable.toFuture().map(doc => doc.getInteger("total"))
   }
 }
