@@ -1,5 +1,7 @@
 package com.rallyhealth.scaladriver
 
+import java.util.Date
+
 import org.bson.codecs.ObjectIdGenerator
 import org.joda.time.DateTime
 import org.scalatest.FunSuite
@@ -21,7 +23,7 @@ class ScalaDriverBoxPersistenceSpec extends FunSuite {
     val bBoxId = new ObjectIdGenerator().generate().toString
 
 
-    val now = DateTime.now
+    val now = DateTime.now()
 
     val cBox = CorrugatedBox(cBoxId, length = 1, width = 1, height = 1, manufactureDate =  now, lastShipped = None,layers = 4)
     val rBox = RigidBox(rBoxId, length = 4, width = 2, height = 2, manufactureDate =  now, lastShipped = Some(now), numberOfPiece = 5)
@@ -63,19 +65,4 @@ class ScalaDriverBoxPersistenceSpec extends FunSuite {
     assert(deletionResultAfter.wasAcknowledged())
   }
 
-  test("stress") {
-      var id = ""
-      var timeBefore = System.currentTimeMillis()
-      val persister = new ScalaDriverBoxPersistence()
-      for ( i <- 1 to 100000) {
-        id = new ObjectIdGenerator().generate().toString
-        val cBox = CorrugatedBox(id, length = 1, width = 1, height = 1, manufactureDate =  DateTime.now, lastShipped = None,layers = 4)
-        Await.result(persister.save(cBox), atMost )
-        val box = Await.result[Option[CorrugatedBox]](persister.findCorrugatedBoxById(id), atMost)
-        assert(box.get == cBox)
-
-      }
-      var timeAfter = System.currentTimeMillis()
-      println((timeAfter - timeBefore)/(1000))
-  }
 }

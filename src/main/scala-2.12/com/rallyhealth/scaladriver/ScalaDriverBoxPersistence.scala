@@ -41,7 +41,7 @@ class ScalaDriverBoxConnectionManager {
 
 class ScalaDriverBoxPersistence extends ScalaDriverBoxConnectionManager {
 
-  val codecRegistry = fromRegistries( fromProviders(classOf[Box]), CodecRegistries.fromCodecs(new JodaCodec), DEFAULT_CODEC_REGISTRY )
+  val codecRegistry = fromRegistries( fromProviders(Macros.createCodecProviderIgnoreNone[Box]()), CodecRegistries.fromCodecs(new JodaCodec), DEFAULT_CODEC_REGISTRY )
 
   val collection: MongoCollection[Box] = database.getCollection[Box]("box").withCodecRegistry(codecRegistry)
 
